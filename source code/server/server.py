@@ -22,8 +22,8 @@ cursor = cnx.cursor(prepared=True)
 def index(path):
     return render_template("index.html")
 
-@app.route("/addBorrower",methods=['GET', 'POST'])
-def addBorrower():
+@app.route("/addBORROWER",methods=['GET', 'POST'])
+def addBORROWER():
     data = request.get_json(force=True)
     query = "select count(card_id) + 1 from BORROWER;"
     prefix = 'ID'
@@ -38,17 +38,17 @@ def addBorrower():
     response = None
     try:
         cursor.execute(query,(card_id,data["ssn"],data["name"],data["address"],data["phone"]))
-        response = {'message':'Borrower Added','success':True}
+        response = {'message':'BORROWER Added','success':True}
         cnx.commit()
     except mysql.connector.Error as err:
         if(err.errno in errorCodes.errorCodeMessage):
             response = {'message':errorCodes.errorCodeMessage[err.errno],'success':False}
         else:
-            response = {'message':'Borrower Creation failed','success':False}
+            response = {'message':'BORROWER Creation failed','success':False}
     return jsonify(response)
 
-@app.route("/searchBook",methods=['GET', 'POST'])
-def searchBook():
+@app.route("/searchBOOK",methods=['GET', 'POST'])
+def searchBOOK():
     data = request.get_json(force=True)
     searchQuery = data["searchQuery"]
     searchResult = []
@@ -78,19 +78,19 @@ def searchBook():
        #     response = {'searchResult':None,'message':'search failed','success':False}
     return jsonify(response)
 
-@app.route("/checkoutBook",methods=['GET', 'POST'])
-def checkoutBook():
+@app.route("/checkoutBOOK",methods=['GET', 'POST'])
+def checkoutBOOK():
     data = request.get_json(force=True)
-    cardId = data["borrowerId"]
+    cardId = data["BORROWERId"]
     isbn = data["isbn"]
     response = None
     try:
         query = 'select 1 from BORROWER where card_id = %s'
         cursor.execute(query,(cardId,))
-        isBorrower = 0
+        isBORROWER = 0
         for row in cursor:
-            isBorrower = row[0]
-        if(isBorrower):
+            isBORROWER = row[0]
+        if(isBORROWER):
             query = 'select isCheckedOut from BOOK where isbn = %s'
             isCheckedOut = 1
             cursor.execute(query,(isbn,))
@@ -102,7 +102,7 @@ def checkoutBook():
             for row in cursor:
                 isCountExceeded = row[0]
             if(isCheckedOut):
-                response = {'message':'Book already checked out','success':False}
+                response = {'message':'BOOK already checked out','success':False}
             elif(isCountExceeded):
                 response = {'message':'Maximum limit of 3 reached. You cannot checkout','success':False}
             else:
@@ -113,18 +113,18 @@ def checkoutBook():
                 cursor.execute(query1,(isbn,cardId,dateOut,dueDate))
                 cursor.execute(query2,(isbn,))
                 cnx.commit()
-                response = {'message':'Book Checked Out','success':True}
+                response = {'message':'BOOK Checked Out','success':True}
         else:
-            response = {'message':'Invalid Borrower Id','success':False}
+            response = {'message':'Invalid BORROWER Id','success':False}
     except mysql.connector.Error as err:
         if(err.errno in errorCodes.errorCodeMessage):
             response = {'message':errorCodes.errorCodeMessage[err.errno],'success':False}
         else:
-            response = {'message':'Borrower Creation failed','success':False}
+            response = {'message':'BORROWER Creation failed','success':False}
     return jsonify(response)
 
-@app.route("/searchBookLoan",methods=['GET', 'POST'])
-def searchBookLoan():
+@app.route("/searchBOOKLoan",methods=['GET', 'POST'])
+def searchBOOKLoan():
     data = request.get_json(force=True)
     searchQuery = data["searchQuery"]
     searchResult = []
@@ -142,8 +142,8 @@ def searchBookLoan():
             response = {'searchResult':None,'message':'searchFailed','success':False}
     return jsonify(response)
 
-@app.route("/checkinBook",methods=['GET', 'POST'])
-def checkinBook():
+@app.route("/checkinBOOK",methods=['GET', 'POST'])
+def checkinBOOK():
     data = request.get_json(force=True)
     loanId = data["loanId"]
     response = None
@@ -154,12 +154,12 @@ def checkinBook():
         cursor.execute(query1%format_strings,tuple(loanId))
         cursor.execute(query2%format_strings,tuple(loanId))
         cnx.commit()
-        response = {'message':'Book Checked In','success':True}
+        response = {'message':'BOOK Checked In','success':True}
     except mysql.connector.Error as err:
         if(err.errno in errorCodes.errorCodeMessage):
             response = {'message':errorCodes.errorCodeMessage[err.errno],'success':False}
         else:
-            response = {'message':'Book Check In fail','success':False}
+            response = {'message':'BOOK Check In fail','success':False}
     return jsonify(response)
 
 @app.route("/calculateFines",methods=['GET', 'POST'])
@@ -178,17 +178,17 @@ def calculateFines():
             diff = row[2] - row[1]
             fine = round(diff.days * 0.25,2)
         try:
-            query = 'Insert into fines values(%s,%s,%s)'
+            query = 'Insert into Fines values(%s,%s,%s)'
             cursor.execute(query,(row[0],fine,False))
             cnx.commit()
-            response = {'message':'fines updated','success':True}
+            response = {'message':'Fines updated','success':True}
         except mysql.connector.Error as err:
             if(err.errno in errorCodes.errorCodeMessage):
                 if(err.errno==1062):
-                    query = 'update fines set fine_amt = %s where loan_id = %s and paid = false'
+                    query = 'update Fines set fine_amt = %s where loan_id = %s and paid = false'
                     cursor.execute(query,(fine,row[0]))
                     cnx.commit()
-                    response = {'message':'fines updated','success':True}
+                    response = {'message':'Fines updated','success':True}
                 else:
                     response = {'message':errorCodes.errorCodeMessage[err.errno],'success':False}
             else:
@@ -199,13 +199,13 @@ def calculateFines():
 def fetchFines():
     resultSet = []
     try:
-        query = 'select b.card_id,b.bname,SUM(f.fine_amt) from fines f join book_loans bl on f.Loan_id = bl.Loan_id join borrower b on bl.card_id = b.Card_id where f.paid=false group by bl.Card_id'
+        query = 'select b.card_id,b.bname,SUM(f.fine_amt) from Fines f join BOOK_loans bl on f.Loan_id = bl.Loan_id join BORROWER b on bl.card_id = b.Card_id where f.paid=false group by bl.Card_id'
         cursor.execute(query)
         rows = cursor.fetchall()
         resultSet = []
         childMap = {}
         for row in rows:
-            query = 'select bl.loan_id,b.bname,f.fine_amt,bl.date_in from fines f join book_loans bl on f.Loan_id = bl.Loan_id join borrower b on bl.card_id = b.Card_id where f.paid=false and b.card_id=%s'
+            query = 'select bl.loan_id,b.bname,f.fine_amt,bl.date_in from Fines f join BOOK_loans bl on f.Loan_id = bl.Loan_id join BORROWER b on bl.card_id = b.Card_id where f.paid=false and b.card_id=%s'
             cardId = row[0].decode('utf-8')
             cursor.execute(query,(cardId,))
             childSet = []
@@ -215,7 +215,7 @@ def fetchFines():
             childMap[cardId] = childSet
             type_fixed_row = tuple([el.decode('utf-8') if type(el) is bytearray else el for el in row])
             resultSet.append(type_fixed_row)
-        response = {'aggregateData':resultSet,'finesDataForCardId':childMap, 'message':'fines update','success':True}
+        response = {'aggregateData':resultSet,'FinesDataForCardId':childMap, 'message':'Fines update','success':True}
     except mysql.connector.Error as err:
         if(err.errno in errorCodes.errorCodeMessage):
             response = {'message':errorCodes.errorCodeMessage[err.errno],'success':False}
@@ -229,7 +229,7 @@ def settleFines():
     loanId = data["loanId"]
     response = None
     format_strings = ','.join(['%s'] * len(loanId))
-    query = 'update fines set paid = true where loan_id in (%s)'
+    query = 'update Fines set paid = true where loan_id in (%s)'
     try:
         cursor.execute(query%format_strings,tuple(loanId))
         cnx.commit()
