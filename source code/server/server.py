@@ -11,7 +11,8 @@ import datetime
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 
 #enter your username and password
-cnx = mysql.connector.connect(user='root', password='',database='lms',charset='utf8')
+
+cnx = mysql.connector.connect(user='root', password='teledoc123',database='lms',charset='utf8')
 cursor = cnx.cursor(prepared=True)
 
 
