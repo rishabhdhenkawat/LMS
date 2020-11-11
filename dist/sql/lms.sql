@@ -1,4 +1,3 @@
-DROP DATABASE IF EXISTS LMS;
 CREATE DATABASE LMS;
 USE LMS;
 CREATE TABLE BOOK(Isbn VARCHAR(10) primary key, Title VARCHAR(1000) not null, isCheckedOut boolean);
