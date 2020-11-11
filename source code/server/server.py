@@ -25,7 +25,7 @@ def index(path):
 @app.route("/addBorrower",methods=['GET', 'POST'])
 def addBorrower():
     data = request.get_json(force=True)
-    query = "select count(card_id) + 1 from borrower;"
+    query = "select count(card_id) + 1 from BORROWER;"
     prefix = 'ID'
     cursor.execute(query)
     row = cursor.fetchone()
