@@ -52,7 +52,7 @@ def searchBook():
     data = request.get_json(force=True)
     searchQuery = data["searchQuery"]
     searchResult = []
-    query1 = 'select b.ISBN from Book b left outer join BOOK_AUTHORS ba on b.isbn = ba.isbn left outer join authors a on ba.author_id = a.author_id where b.isbn like %s or b.title like %s or a.name like %s'
+    query1 = 'select b.ISBN from BOOK b left outer join BOOK_AUTHORS ba on b.isbn = ba.isbn left outer join AUTHORS a on ba.author_id = a.author_id where b.isbn like %s or b.title like %s or a.name like %s'
 
     ISBNList = []
     try:
@@ -63,7 +63,7 @@ def searchBook():
         if(len(ISBNList)>0):
             ISBN = list(set(ISBNList))
             format_strings = '('+','.join(['%s'] * len(ISBN))+')'
-            query2 = 'select b.ISBN,b.Title,GROUP_CONCAT(a.name),b.isCheckedOut from Book b left outer join BOOK_AUTHORS ba on b.isbn = ba.isbn left outer join authors a on ba.author_id = a.author_id where b.isbn IN ' + format_strings + ' group by b.isbn'
+            query2 = 'select b.ISBN,b.Title,GROUP_CONCAT(a.name),b.isCheckedOut from BOOK b left outer join BOOK_AUTHORS ba on b.isbn = ba.isbn left outer join AUTHORS a on ba.author_id = a.author_id where b.isbn IN ' + format_strings + ' group by b.isbn'
             cursor.execute(query2,tuple(ISBN))
             for row in cursor:
                 type_fixed_row = tuple([el.decode('utf-8') if type(el) is bytearray else el for el in row])
@@ -243,4 +243,4 @@ def settleFines():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0",post="8888")
