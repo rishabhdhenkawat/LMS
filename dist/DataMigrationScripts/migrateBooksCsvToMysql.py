@@ -2,7 +2,7 @@ import mysql.connector
 import csv
 
 #enter your username and password
-cnx = mysql.connector.connect(user='', password='',database='LMS',charset='utf8')
+cnx = mysql.connector.connect(user='root', password='teledoc123',database='LMS',charset='utf8')
 cursor = cnx.cursor(prepared=True)
 
 with open('books.csv') as csvfile:
